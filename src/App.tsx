@@ -10,12 +10,20 @@ const POSICOES = [
 
 type Jogador = (typeof jogadores)[number]
 
+// Foto local em src/assets/players/<numero>.<ext> tem prioridade sobre a da Wikipedia
+const FOTOS_LOCAIS = Object.fromEntries(
+  Object.entries(
+    import.meta.glob<string>('./assets/players/*', { eager: true, import: 'default', query: '?url' }),
+  ).map(([caminho, url]) => [caminho.split('/').pop()!.split('.')[0], url]),
+)
+
 function PlayerCard({ jogador }: { jogador: Jogador }) {
+  const foto = FOTOS_LOCAIS[jogador.numero] ?? jogador.foto
   return (
     <article className="relative overflow-hidden rounded-lg bg-neutral-900 text-center">
-      {jogador.foto ? (
+      {foto ? (
         <img
-          src={jogador.foto}
+          src={foto}
           alt={jogador.nome}
           loading="lazy"
           className="aspect-3/4 w-full bg-neutral-800 object-cover object-top"

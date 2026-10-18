@@ -54,16 +54,6 @@ export default function App() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setEscuro(!escuro)}
-              aria-label={escuro ? 'Ativar modo claro' : 'Ativar modo escuro'}
-              title={escuro ? 'Modo claro' : 'Modo escuro'}
-              className="grid size-8 cursor-pointer place-items-center rounded-full transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
-            >
-              {/* escudo escuro leva ao modo escuro; escudo claro leva ao modo claro */}
-              <img src={logo} alt="" className={`h-6 grayscale ${escuro ? 'invert' : 'brightness-50'}`} />
-            </button>
             <details className="group relative">
               <summary
                 aria-label="Sobre os dados"
@@ -80,6 +70,19 @@ export default function App() {
                 continuamente para manter os dados corretos e atualizados.
               </p>
             </details>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={escuro}
+              aria-label="Modo escuro"
+              onClick={() => setEscuro(!escuro)}
+              className="relative ml-2 h-7 w-13 cursor-pointer rounded-full bg-stone-200 transition-colors dark:bg-stone-700"
+            >
+              {/* escudo escuro com o modo desligado, escudo claro com o modo ligado */}
+              <span className="absolute top-0.5 left-0.5 grid size-6 place-items-center rounded-full bg-white shadow transition-transform dark:translate-x-6 dark:bg-stone-900">
+                <img src={logo} alt="" className={`h-4 grayscale ${escuro ? 'invert' : 'brightness-50'}`} />
+              </span>
+            </button>
           </div>
         </div>
       </header>

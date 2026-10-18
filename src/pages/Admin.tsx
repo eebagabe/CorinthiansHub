@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { API_URL, ErroApi, admin, token } from '../api'
+import { mesesRestantes, tempoRestante } from '../datas'
 import { dataParaIso, isoParaData, mascararData, mascararMoeda, moedaParaNumero } from '../mascaras'
 
 // Backoffice: valores como estao guardados (valor de mercado em euro, salario em real)
@@ -138,7 +139,248 @@ function Login({ entrar }: { entrar: () => void }) {
   )
 }
 
+const SECOES = [
+  ['Goleiro', 'Goleiros'],
+  ['Defensor', 'Defensores'],
+  ['Meio-campista', 'Meias'],
+  ['Atacante', 'Atacantes'],
+] as const
+
+const dataBr = (iso: string) => iso.split('-').reverse().join('/')
+
+function Icone({ d }: { d: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="size-4"
+      aria-hidden
+    >
+      <path d={d} />
+    </svg>
+  )
+}
+const ICONES = {
+  jogadores:
+    'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+  contratos: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
+  editar: 'M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z',
+  excluir: 'M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6',
+  sair: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9',
+}
+
+function Acoes({ editar, excluir, nome }: { editar: () => void; excluir?: () => void; nome: string }) {
+  const base = 'grid size-8 cursor-pointer place-items-center rounded-lg transition-colors'
+  return (
+    <div className="flex justify-end gap-1">
+      <button
+        onClick={editar}
+        title="Editar"
+        aria-label={`Editar ${nome}`}
+        className={`${base} text-stone-500 hover:bg-stone-200 hover:text-stone-900 dark:hover:bg-stone-800 dark:hover:text-white`}
+      >
+        <Icone d={ICONES.editar} />
+      </button>
+      {excluir && (
+        <button
+          onClick={excluir}
+          title="Excluir"
+          aria-label={`Excluir ${nome}`}
+          className={`${base} text-stone-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400`}
+        >
+          <Icone d={ICONES.excluir} />
+        </button>
+      )}
+    </div>
+  )
+}
+
+function Jogador({ j }: { j: JogadorAdmin }) {
+  return (
+    <div className="flex items-center gap-3">
+      {j.fotoUrl ? (
+        <img src={j.fotoUrl} alt="" className="size-10 shrink-0 rounded-lg object-cover object-top" />
+      ) : (
+        <span className="size-10 shrink-0 rounded-lg bg-stone-200 dark:bg-stone-800" />
+      )}
+      <div className="min-w-0">
+        <p className="truncate font-medium">{j.nome}</p>
+        {j.nomeCompleto && <p className="truncate text-xs text-stone-400">{j.nomeCompleto}</p>}
+      </div>
+    </div>
+  )
+}
+
+function Prazo({ fim }: { fim: string | null }) {
+  if (!fim) return <span className="text-stone-400">Sem data</span>
+  const meses = mesesRestantes(fim)
+  const cor =
+    meses < 6
+      ? 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'
+      : meses < 12
+        ? 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+        : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300'
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${cor}`}>
+      {tempoRestante(fim)}
+    </span>
+  )
+}
+
+const th = 'px-4 py-2.5 text-left text-xs font-medium tracking-wider text-stone-400 uppercase'
+const td = 'px-4 py-3'
+const cartao = 'overflow-hidden rounded-xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900'
+
+function TabelaJogadores({
+  lista,
+  editar,
+  excluir,
+}: {
+  lista: JogadorAdmin[]
+  editar: (j: JogadorAdmin) => void
+  excluir: (j: JogadorAdmin) => void
+}) {
+  return (
+    <div className="flex flex-col gap-6">
+      {SECOES.map(([posicao, titulo]) => {
+        const daPosicao = lista.filter((j) => j.posicao === posicao)
+        return (
+          <section key={posicao} className={cartao}>
+            <h3 className="flex items-center gap-2 border-b border-stone-200 px-4 py-3 font-semibold dark:border-stone-800">
+              {titulo}
+              <span className="rounded-full bg-stone-100 px-2 text-xs font-medium text-stone-500 dark:bg-stone-800">
+                {daPosicao.length}
+              </span>
+            </h3>
+            {daPosicao.length === 0 ? (
+              <p className="px-4 py-6 text-sm text-stone-400">Nenhum jogador nesta posição.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-stone-50 dark:bg-stone-950">
+                    <tr>
+                      <th className={`${th} w-14`}>Nº</th>
+                      <th className={th}>Jogador</th>
+                      <th className={th}>Salário/mês</th>
+                      <th className={th}>Valor de mercado</th>
+                      <th className={th}>Contrato</th>
+                      <th className={th}>Atualizado</th>
+                      <th className={`${th} text-right`}>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
+                    {daPosicao.map((j) => (
+                      <tr key={j.id} className="hover:bg-stone-50 dark:hover:bg-stone-950">
+                        <td className={`${td} text-stone-400 tabular-nums`}>{j.numero}</td>
+                        <td className={`${td} max-w-72`}>
+                          <Jogador j={j} />
+                        </td>
+                        <td className={`${td} tabular-nums`}>
+                          {j.salarioMensalReais ? (
+                            reais.format(j.salarioMensalReais)
+                          ) : (
+                            <span className="text-stone-400">-</span>
+                          )}
+                        </td>
+                        <td className={`${td} tabular-nums`}>
+                          {j.valorMercadoEuros != null ? (
+                            euros.format(j.valorMercadoEuros)
+                          ) : (
+                            <span className="text-stone-400">-</span>
+                          )}
+                        </td>
+                        <td className={`${td} tabular-nums`}>
+                          {j.fimContrato ? dataBr(j.fimContrato) : <span className="text-stone-400">-</span>}
+                        </td>
+                        <td className={`${td} text-stone-400 tabular-nums`}>{dataBr(j.atualizadoEm)}</td>
+                        <td className={td}>
+                          <Acoes nome={j.nome} editar={() => editar(j)} excluir={() => excluir(j)} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        )
+      })}
+    </div>
+  )
+}
+
+function TabelaContratos({ lista, editar }: { lista: JogadorAdmin[]; editar: (j: JogadorAdmin) => void }) {
+  // vence primeiro no topo; sem data no final
+  const ordenados = [...lista].sort((a, b) => (a.fimContrato ?? '9999').localeCompare(b.fimContrato ?? '9999'))
+  const ate6 = lista.filter((j) => j.fimContrato && mesesRestantes(j.fimContrato) < 6).length
+  const semData = lista.filter((j) => !j.fimContrato).length
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-3 text-sm">
+        <span className="rounded-lg bg-red-50 px-3 py-2 text-red-700 dark:bg-red-950 dark:text-red-300">
+          <strong className="tabular-nums">{ate6}</strong> vencem em menos de 6 meses
+        </span>
+        <span className="rounded-lg bg-stone-100 px-3 py-2 text-stone-600 dark:bg-stone-800 dark:text-stone-300">
+          <strong className="tabular-nums">{semData}</strong> sem data de contrato
+        </span>
+      </div>
+      <div className={cartao}>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-stone-50 dark:bg-stone-950">
+              <tr>
+                <th className={th}>Jogador</th>
+                <th className={th}>Posição</th>
+                <th className={th}>Fim do contrato</th>
+                <th className={th}>Tempo restante</th>
+                <th className={th}>Salário/mês</th>
+                <th className={`${th} text-right`}>Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
+              {ordenados.map((j) => (
+                <tr key={j.id} className="hover:bg-stone-50 dark:hover:bg-stone-950">
+                  <td className={`${td} max-w-72`}>
+                    <Jogador j={j} />
+                  </td>
+                  <td className={`${td} text-stone-500`}>{j.posicao}</td>
+                  <td className={`${td} tabular-nums`}>
+                    {j.fimContrato ? dataBr(j.fimContrato) : <span className="text-stone-400">-</span>}
+                  </td>
+                  <td className={td}>
+                    <Prazo fim={j.fimContrato} />
+                  </td>
+                  <td className={`${td} tabular-nums`}>
+                    {j.salarioMensalReais ? (
+                      reais.format(j.salarioMensalReais)
+                    ) : (
+                      <span className="text-stone-400">-</span>
+                    )}
+                  </td>
+                  <td className={td}>
+                    <Acoes nome={j.nome} editar={() => editar(j)} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const MENU = [
+  ['jogadores', 'Jogadores', 'Elenco por posição'],
+  ['contratos', 'Contratos', 'Vencimentos e salários'],
+] as const
+
 function Painel({ sair }: { sair: () => void }) {
+  const [secao, setSecao] = useState<(typeof MENU)[number][0]>('jogadores')
   const [jogadores, setJogadores] = useState<JogadorAdmin[] | null>(null)
   const [editando, setEditando] = useState<JogadorAdmin | 'novo' | null>(null)
   const [erro, setErro] = useState('')
@@ -171,81 +413,62 @@ function Painel({ sair }: { sair: () => void }) {
     }
   }
 
+  const [, titulo, subtitulo] = MENU.find(([id]) => id === secao)!
+
   return (
-    <div>
+    <div className="flex flex-col gap-6 md:flex-row md:items-start">
       {editando && (
         <Modal fechar={fecharModal}>
           <Formulario jogador={editando === 'novo' ? undefined : editando} sair={sair} fechar={fecharModal} />
         </Modal>
       )}
-      <div className="mb-6 flex items-center gap-3">
-        <h2 className="text-lg font-semibold">Jogadores</h2>
-        <button onClick={() => setEditando('novo')} className={`${botaoPrimario} ml-auto`}>
-          Novo jogador
-        </button>
-        <button onClick={sair} className={botaoSecundario}>
-          Sair
-        </button>
-      </div>
-      {erro && <p className="text-sm text-red-600 dark:text-red-400">{erro}</p>}
-      {!jogadores ? (
-        <p className="text-sm text-stone-400">Carregando...</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="text-xs tracking-wider text-stone-400 uppercase">
-              <tr>
-                {['', 'Nº', 'Nome', 'Posição', 'Salário/mês', 'Mercado', 'Contrato', 'Atualizado', ''].map((t, i) => (
-                  <th key={i} className="px-3 py-2 font-medium">
-                    {t}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-200 dark:divide-stone-800">
-              {jogadores.map((j) => (
-                <tr
-                  key={j.id}
-                  onClick={() => setEditando(j)}
-                  className="cursor-pointer hover:bg-stone-100 dark:hover:bg-stone-900"
-                >
-                  <td className="px-3 py-2">
-                    {j.fotoUrl ? (
-                      <img src={j.fotoUrl} alt="" className="size-9 rounded-md object-cover object-top" />
-                    ) : (
-                      <span className="block size-9 rounded-md bg-stone-200 dark:bg-stone-800" />
-                    )}
-                  </td>
-                  <td className="px-3 py-2 tabular-nums">{j.numero}</td>
-                  <td className="px-3 py-2 font-medium">{j.nome}</td>
-                  <td className="px-3 py-2">{j.posicao}</td>
-                  <td className="px-3 py-2 tabular-nums">
-                    {j.salarioMensalReais ? reais.format(j.salarioMensalReais) : '-'}
-                  </td>
-                  <td className="px-3 py-2 tabular-nums">
-                    {j.valorMercadoEuros != null ? euros.format(j.valorMercadoEuros) : '-'}
-                  </td>
-                  <td className="px-3 py-2 tabular-nums">{j.fimContrato?.split('-').reverse().join('/') ?? '-'}</td>
-                  <td className="px-3 py-2 text-stone-400 tabular-nums">
-                    {j.atualizadoEm.split('-').reverse().join('/')}
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        excluir(j)
-                      }}
-                      className="cursor-pointer rounded-md px-2 py-1 text-xs text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
-                    >
-                      Excluir
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+      <aside className="shrink-0 md:sticky md:top-6 md:w-56">
+        <p className="mb-2 px-3 text-xs font-medium tracking-widest text-stone-400 uppercase">Backoffice</p>
+        <nav className="flex gap-1 md:flex-col">
+          {MENU.map(([id, nome]) => (
+            <button
+              key={id}
+              onClick={() => setSecao(id)}
+              aria-current={secao === id ? 'page' : undefined}
+              className="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-stone-600 transition-colors hover:bg-stone-100 aria-[current=page]:bg-stone-900 aria-[current=page]:text-white dark:text-stone-300 dark:hover:bg-stone-800 dark:aria-[current=page]:bg-stone-100 dark:aria-[current=page]:text-stone-900"
+            >
+              <Icone d={ICONES[id]} />
+              {nome}
+            </button>
+          ))}
+          <button
+            onClick={sair}
+            className="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-stone-500 transition-colors hover:bg-stone-100 md:mt-4 dark:hover:bg-stone-800"
+          >
+            <Icone d={ICONES.sair} />
+            Sair
+          </button>
+        </nav>
+      </aside>
+
+      <div className="min-w-0 flex-1">
+        <div className="mb-6 flex flex-wrap items-center gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">{titulo}</h2>
+            <p className="text-sm text-stone-400">
+              {subtitulo}
+              {jogadores && ` · ${jogadores.length} jogadores`}
+            </p>
+          </div>
+          <button onClick={() => setEditando('novo')} className={`${botaoPrimario} ml-auto`}>
+            Novo jogador
+          </button>
         </div>
-      )}
+        {erro && <p className="mb-4 text-sm text-red-600 dark:text-red-400">{erro}</p>}
+        {!jogadores ? (
+          <p className="text-sm text-stone-400">Carregando...</p>
+        ) : secao === 'jogadores' ? (
+          <TabelaJogadores lista={jogadores} editar={setEditando} excluir={excluir} />
+        ) : (
+          <TabelaContratos lista={jogadores} editar={setEditando} />
+        )}
+      </div>
     </div>
   )
 }

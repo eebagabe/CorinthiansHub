@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "test": "node src/mascaras.test.ts",
+    "test": "node src/mascaras.test.ts && node src/datas.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {

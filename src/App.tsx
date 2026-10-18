@@ -37,7 +37,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-stone-50 text-stone-800 dark:bg-stone-950 dark:text-stone-200">
       <header className="border-b border-stone-200 dark:border-stone-800">
-        <div className="mx-auto flex items-center gap-8 px-4 py-5 lg:w-[90%] lg:px-0">
+        <div className="mx-auto flex items-center gap-4 px-4 py-5 sm:gap-8 lg:w-[90%] lg:px-0">
           <a href="#/" className="flex items-center gap-3">
             <img src={logo} alt="" className="h-9" />
             <h1 className="text-lg font-semibold tracking-tight">

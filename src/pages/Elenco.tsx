@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
 import { API_URL } from '../api'
+import { tempoRestante } from '../datas'
 
 const POSICOES = [
   ['Goleiro', 'Goleiros'],
@@ -40,18 +41,6 @@ function idade(nascimento: string) {
   const [a, m, d] = nascimento.split('-').map(Number)
   const hoje = new Date()
   return hoje.getFullYear() - a - (hoje.getMonth() + 1 < m || (hoje.getMonth() + 1 === m && hoje.getDate() < d) ? 1 : 0)
-}
-
-function tempoRestante(fim: string) {
-  const [a, m, d] = fim.split('-').map(Number)
-  const hoje = new Date()
-  const meses = (a - hoje.getFullYear()) * 12 + (m - 1 - hoje.getMonth()) - (d < hoje.getDate() ? 1 : 0)
-  if (meses < 0) return 'encerrado'
-  if (meses < 1) return 'menos de 1 mês'
-  const [anos, resto] = [Math.floor(meses / 12), meses % 12]
-  return [anos && `${anos} ${anos > 1 ? 'anos' : 'ano'}`, resto && `${resto} ${resto > 1 ? 'meses' : 'mês'}`]
-    .filter(Boolean)
-    .join(' e ')
 }
 
 function PlayerCard({ jogador, aberto, onToggle }: { jogador: Jogador; aberto: boolean; onToggle: () => void }) {

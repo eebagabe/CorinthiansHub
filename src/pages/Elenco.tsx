@@ -23,26 +23,26 @@ function PlayerCard({ jogador, aberto, onToggle }: { jogador: Jogador; aberto: b
   return (
     <li
       style={{ viewTransitionName: `jogador-${jogador.numero}` }}
-      className={`flex rounded-xl ${aberto ? 'bg-stone-900 text-white shadow-lg' : ''}`}
+      className={`flex rounded-xl ${aberto ? 'bg-stone-900 text-white shadow-lg dark:bg-stone-100 dark:text-stone-900' : ''}`}
     >
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={aberto}
-        className={`w-64 shrink-0 cursor-pointer rounded-xl p-2 text-left transition-colors ${aberto ? '' : 'hover:bg-stone-100'}`}
+        className={`w-64 shrink-0 cursor-pointer rounded-xl p-2 text-left transition-colors ${aberto ? '' : 'hover:bg-stone-100 dark:hover:bg-stone-900'}`}
       >
         {foto ? (
-          <img src={foto} alt="" loading="lazy" className="aspect-square w-full rounded-lg bg-stone-200 object-cover object-top" />
+          <img src={foto} alt="" loading="lazy" className="aspect-square w-full rounded-lg bg-stone-200 object-cover dark:bg-stone-800 object-top" />
         ) : (
-          <span className="block aspect-square w-full rounded-lg bg-stone-200" />
+          <span className="block aspect-square w-full rounded-lg bg-stone-200 dark:bg-stone-800" />
         )}
         <span className="mt-3 flex items-baseline gap-2">
           <span className="text-sm text-stone-400 tabular-nums">{jogador.numero}</span>
           <span className="font-medium">{jogador.nome}</span>
         </span>
-        <span className={`block text-sm ${aberto ? 'text-stone-300' : 'text-stone-500'}`}>{jogador.posicao}</span>
+        <span className={`block text-sm ${aberto ? 'text-stone-300 dark:text-stone-600' : 'text-stone-500 dark:text-stone-400'}`}>{jogador.posicao}</span>
       </button>
-      {aberto && <div className="w-64 p-4 text-sm text-stone-300">Expandido</div>}
+      {aberto && <div className="w-64 p-4 text-sm text-stone-300 dark:text-stone-600">Expandido</div>}
     </li>
   )
 }

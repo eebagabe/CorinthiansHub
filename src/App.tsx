@@ -21,14 +21,24 @@ export default function App() {
   }, [])
   const Pagina = PAGINAS[rota][1]
 
+  const [escuro, setEscuro] = useState(() => document.documentElement.classList.contains('dark'))
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', escuro)
+    try {
+      localStorage.setItem('tema', escuro ? 'escuro' : 'claro')
+    } catch {
+      // sem storage (aba privada), o tema so nao fica salvo
+    }
+  }, [escuro])
+
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-800">
-      <header className="border-b border-stone-200">
+    <div className="min-h-screen bg-stone-50 text-stone-800 dark:bg-stone-950 dark:text-stone-200">
+      <header className="border-b border-stone-200 dark:border-stone-800">
         <div className="mx-auto flex items-center gap-8 px-4 py-5 lg:w-[90%] lg:px-0">
           <a href="#/" className="flex items-center gap-3">
             <img src={logo} alt="" className="h-9" />
             <h1 className="text-lg font-semibold tracking-tight">
-              Todo Poderoso <span className="font-normal text-stone-400">| Hub</span>
+              Todo Poderoso <span className="font-normal text-stone-400 dark:text-stone-500">| Hub</span>
             </h1>
           </a>
           <nav className="flex gap-6 text-sm">
@@ -37,28 +47,40 @@ export default function App() {
                 key={r}
                 href={`#/${r}`}
                 aria-current={rota === r ? 'page' : undefined}
-                className="text-stone-500 transition-colors hover:text-stone-900 aria-[current=page]:font-medium aria-[current=page]:text-stone-900"
+                className="text-stone-500 transition-colors hover:text-stone-900 aria-[current=page]:font-medium aria-[current=page]:text-stone-900 dark:text-stone-400 dark:hover:text-white dark:aria-[current=page]:text-white"
               >
                 {PAGINAS[r][0]}
               </a>
             ))}
           </nav>
-          <details className="group relative ml-auto">
-            <summary
-              aria-label="Sobre os dados"
-              className="grid size-8 cursor-pointer list-none place-items-center rounded-full text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 group-open:bg-stone-100 group-open:text-stone-700"
+          <div className="ml-auto flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setEscuro(!escuro)}
+              aria-label={escuro ? 'Ativar modo claro' : 'Ativar modo escuro'}
+              title={escuro ? 'Modo claro' : 'Modo escuro'}
+              className="grid size-8 cursor-pointer place-items-center rounded-full transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="size-5">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 16v-4M12 8h.01" />
-              </svg>
-            </summary>
-            <p className="absolute right-0 z-10 mt-2 w-80 rounded-xl border border-stone-200 bg-white p-4 text-xs leading-relaxed text-stone-500 shadow-lg">
-              As informações deste site são reunidas a partir de fontes públicas, como Wikipedia e Wikimedia Commons, e
-              revisadas com cuidado. Ainda assim, podem conter imprecisões ou estar desatualizadas. Trabalhamos
-              continuamente para manter os dados corretos e atualizados.
-            </p>
-          </details>
+              {/* escudo escuro leva ao modo escuro; escudo claro leva ao modo claro */}
+              <img src={logo} alt="" className={`h-6 grayscale ${escuro ? 'invert' : 'brightness-50'}`} />
+            </button>
+            <details className="group relative">
+              <summary
+                aria-label="Sobre os dados"
+                className="grid size-8 cursor-pointer list-none place-items-center rounded-full text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 group-open:bg-stone-100 group-open:text-stone-700 dark:hover:bg-stone-800 dark:hover:text-stone-200 dark:group-open:bg-stone-800 dark:group-open:text-stone-200"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="size-5">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4M12 8h.01" />
+                </svg>
+              </summary>
+              <p className="absolute right-0 z-10 mt-2 w-80 rounded-xl border border-stone-200 bg-white p-4 text-xs leading-relaxed text-stone-500 shadow-lg dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400">
+                As informações deste site são reunidas a partir de fontes públicas, como Wikipedia e Wikimedia Commons, e
+                revisadas com cuidado. Ainda assim, podem conter imprecisões ou estar desatualizadas. Trabalhamos
+                continuamente para manter os dados corretos e atualizados.
+              </p>
+            </details>
+          </div>
         </div>
       </header>
       <main className="mx-auto px-4 py-8 lg:w-[90%] lg:px-0">

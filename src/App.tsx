@@ -43,16 +43,27 @@ export default function App() {
               </a>
             ))}
           </nav>
+          <details className="group relative ml-auto">
+            <summary
+              aria-label="Sobre os dados"
+              className="grid size-8 cursor-pointer list-none place-items-center rounded-full text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 group-open:bg-stone-100 group-open:text-stone-700"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="size-5">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4M12 8h.01" />
+              </svg>
+            </summary>
+            <p className="absolute right-0 z-10 mt-2 w-80 rounded-xl border border-stone-200 bg-white p-4 text-xs leading-relaxed text-stone-500 shadow-lg">
+              As informações deste site são reunidas a partir de fontes públicas, como Wikipedia e Wikimedia Commons, e
+              revisadas com cuidado. Ainda assim, podem conter imprecisões ou estar desatualizadas. Trabalhamos
+              continuamente para manter os dados corretos e atualizados.
+            </p>
+          </details>
         </div>
       </header>
       <main className="mx-auto px-4 py-8 lg:w-[90%] lg:px-0">
         <Pagina />
       </main>
-      <footer className="mx-auto max-w-2xl px-4 pb-8 text-center text-xs leading-relaxed text-stone-400">
-        As informações deste site são reunidas a partir de fontes públicas, como Wikipedia e Wikimedia Commons, e
-        revisadas com cuidado. Ainda assim, podem conter imprecisões ou estar desatualizadas. Trabalhamos
-        continuamente para manter os dados corretos e atualizados.
-      </footer>
     </div>
   )
 }

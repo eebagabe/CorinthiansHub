@@ -3,7 +3,7 @@ import { API_URL, ErroApi, admin, token } from '../api'
 import { mesesRestantes, tempoRestante } from '../datas'
 import { dataParaIso, isoParaData, mascararData, mascararMoeda, moedaParaNumero } from '../mascaras'
 
-// Backoffice: valores como estao guardados (valor de mercado em euro, salario em real)
+// Backoffice: valores como estao guardados (multa internacional em euro, demais em real)
 type JogadorAdmin = {
   id: number
   numero: number
@@ -17,7 +17,9 @@ type JogadorAdmin = {
   titular: number | null
   jogosSemSofrerGols: number | null
   jogosSelecao: number | null
-  valorMercadoEuros: number | null
+  multaNacionalReais: number | null
+  multaInternacionalEuros: number | null
+  valorAquisicaoReais: number | null // 0 = sem custo
   salarioMensalReais: number
   fimContrato: string | null
   titulos: string[]
@@ -33,12 +35,21 @@ type Campos = Record<
   | (typeof NUMEROS)[number]
   | (typeof TEXTOS)[number]
   | 'salarioMensalReais'
-  | 'valorMercadoEuros'
+  | 'multaNacionalReais'
+  | 'multaInternacionalEuros'
+  | 'valorAquisicaoReais'
   | 'nascimento'
   | 'fimContrato'
   | 'titulos',
   string
 >
+
+// valores opcionais: vazio = nao informado; multa internacional em euro, resto em real
+const MOEDAS = [
+  ['multaNacionalReais', 'BRL'],
+  ['multaInternacionalEuros', 'EUR'],
+  ['valorAquisicaoReais', 'BRL'],
+] as const
 
 const reais = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
 const euros = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
@@ -54,7 +65,7 @@ function paraCampos(j?: JogadorAdmin): Campos {
   const c = {} as Campos
   for (const k of [...NUMEROS, ...TEXTOS]) c[k] = j?.[k] == null ? '' : String(j[k])
   c.salarioMensalReais = j?.salarioMensalReais ? mascararMoeda(String(j.salarioMensalReais), 'BRL') : ''
-  c.valorMercadoEuros = j?.valorMercadoEuros != null ? mascararMoeda(String(j.valorMercadoEuros), 'EUR') : ''
+  for (const [k, moeda] of MOEDAS) c[k] = j?.[k] != null ? mascararMoeda(String(j[k]), moeda) : ''
   c.nascimento = j?.nascimento ? isoParaData(j.nascimento) : ''
   c.fimContrato = j?.fimContrato ? isoParaData(j.fimContrato) : ''
   c.titulos = j?.titulos.join('\n') ?? ''
@@ -71,7 +82,7 @@ function paraEnvio(c: Campos) {
   for (const k of TEXTOS) corpo[k] = c[k].trim() === '' ? null : c[k].trim()
   corpo.nacionalidade = c.nacionalidade.trim().toUpperCase()
   corpo.salarioMensalReais = moedaParaNumero(c.salarioMensalReais) ?? 0
-  corpo.valorMercadoEuros = moedaParaNumero(c.valorMercadoEuros)
+  for (const [k] of MOEDAS) corpo[k] = moedaParaNumero(c[k])
   for (const k of ['nascimento', 'fimContrato'] as const) {
     corpo[k] = dataParaIso(c[k])
     if (corpo[k] === undefined) erros[k] = 'Data inválida, use dd/mm/aaaa'
@@ -145,6 +156,9 @@ const SECOES = [
   ['Meio-campista', 'Meias'],
   ['Atacante', 'Atacantes'],
 ] as const
+
+const valorOuTraco = (v: number | null, formato: Intl.NumberFormat) =>
+  v != null ? formato.format(v) : <span className="text-stone-400">-</span>
 
 const dataBr = (iso: string) => iso.split('-').reverse().join('/')
 
@@ -266,7 +280,9 @@ function TabelaJogadores({
                       <th className={`${th} w-14`}>Nº</th>
                       <th className={th}>Jogador</th>
                       <th className={th}>Salário/mês</th>
-                      <th className={th}>Valor de mercado</th>
+                      <th className={th}>Multa nacional</th>
+                      <th className={th}>Multa internacional</th>
+                      <th className={th}>Aquisição</th>
                       <th className={th}>Contrato</th>
                       <th className={th}>Atualizado</th>
                       <th className={`${th} text-right`}>Ações</th>
@@ -286,12 +302,10 @@ function TabelaJogadores({
                             <span className="text-stone-400">-</span>
                           )}
                         </td>
+                        <td className={`${td} tabular-nums`}>{valorOuTraco(j.multaNacionalReais, reais)}</td>
+                        <td className={`${td} tabular-nums`}>{valorOuTraco(j.multaInternacionalEuros, euros)}</td>
                         <td className={`${td} tabular-nums`}>
-                          {j.valorMercadoEuros != null ? (
-                            euros.format(j.valorMercadoEuros)
-                          ) : (
-                            <span className="text-stone-400">-</span>
-                          )}
+                          {j.valorAquisicaoReais === 0 ? 'Sem custo' : valorOuTraco(j.valorAquisicaoReais, reais)}
                         </td>
                         <td className={`${td} tabular-nums`}>
                           {j.fimContrato ? dataBr(j.fimContrato) : <span className="text-stone-400">-</span>}
@@ -518,7 +532,7 @@ function Formulario({ jogador, fechar, sair }: { jogador?: JogadorAdmin; fechar:
     (e: { target: { value: string } }) =>
       setCampos({ ...campos, [k]: mascara(e.target.value) })
 
-  const moeda = (k: 'salarioMensalReais' | 'valorMercadoEuros', rotulo: string, tipo: 'BRL' | 'EUR') => (
+  const moeda = (k: 'salarioMensalReais' | (typeof MOEDAS)[number][0], rotulo: string, tipo: 'BRL' | 'EUR') => (
     <Campo rotulo={rotulo} erro={errosCampos[k]}>
       <input
         inputMode="numeric"
@@ -653,7 +667,9 @@ function Formulario({ jogador, fechar, sair }: { jogador?: JogadorAdmin; fechar:
         {data('nascimento', 'Nascimento')}
         {data('fimContrato', 'Fim do contrato')}
         {moeda('salarioMensalReais', 'Salário mensal', 'BRL')}
-        {moeda('valorMercadoEuros', 'Valor de mercado', 'EUR')}
+        {moeda('valorAquisicaoReais', 'Valor de aquisição (0 = sem custo)', 'BRL')}
+        {moeda('multaNacionalReais', 'Multa nacional', 'BRL')}
+        {moeda('multaInternacionalEuros', 'Multa internacional', 'EUR')}
         {numero('jogos', 'Jogos pelo Corinthians')}
         {numero('titular', 'Jogos como titular')}
         {numero('jogosSemSofrerGols', 'Jogos sem sofrer gols')}

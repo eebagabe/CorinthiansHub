@@ -22,7 +22,9 @@ type Jogador = {
   titular: number | null
   jogosSemSofrerGols: number | null
   jogosSelecao: number | null
-  valorMercadoReais: number | null
+  multaNacionalReais: number | null
+  multaInternacionalReais: number | null
+  valorAquisicaoReais: number | null // 0 = sem custo
   fimContrato: string | null
   salarioMensalReais: number // estimativa; 0 = nao encontrado
   titulos: string[]
@@ -85,7 +87,14 @@ function Detalhes({ jogador: j }: { jogador: Jogador }) {
   const itens = (
     [
       ['Idade', j.nascimento && `${idade(j.nascimento)} anos`],
-      ['Valor de mercado', j.valorMercadoReais && reais.format(j.valorMercadoReais)],
+      ['Multa nacional', j.multaNacionalReais != null && reais.format(j.multaNacionalReais)],
+      ['Multa internacional', j.multaInternacionalReais != null && reais.format(j.multaInternacionalReais)],
+      [
+        'Aquisição',
+        j.valorAquisicaoReais === 0
+          ? 'Sem custo'
+          : j.valorAquisicaoReais != null && reais.format(j.valorAquisicaoReais),
+      ],
       ['Salário estimado', j.salarioMensalReais > 0 && `${reais.format(j.salarioMensalReais)}/mês`],
       ['Jogos pelo Corinthians', j.jogos],
       ['Jogos como titular', j.titular],
@@ -122,8 +131,8 @@ function Detalhes({ jogador: j }: { jogador: Jogador }) {
         </div>
       )}
       <p className="mt-auto text-[11px] text-stone-500">
-        Atualizado em {data(j.atualizadoEm)} · jogos: ogol.com.br · salário, mercado e contrato: levantamento em apps e
-        imprensa
+        Atualizado em {data(j.atualizadoEm)} · jogos: ogol.com.br · salário, multas, aquisição e contrato: levantamento
+        em apps e imprensa
       </p>
     </div>
   )

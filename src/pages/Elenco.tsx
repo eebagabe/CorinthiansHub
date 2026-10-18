@@ -50,13 +50,13 @@ function PlayerCard({ jogador, aberto, onToggle }: { jogador: Jogador; aberto: b
   return (
     <li
       style={{ viewTransitionName: `jogador-${jogador.numero}` }}
-      className={`flex rounded-xl ${aberto ? 'bg-stone-900 text-white shadow-lg dark:bg-stone-100 dark:text-stone-900' : ''}`}
+      className={`flex flex-col rounded-xl sm:flex-row ${aberto ? 'col-span-2 bg-stone-900 text-white shadow-lg dark:bg-stone-100 dark:text-stone-900' : ''}`}
     >
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={aberto}
-        className={`w-64 shrink-0 cursor-pointer self-start rounded-xl p-2 text-left transition-colors ${aberto ? '' : 'hover:bg-stone-100 dark:hover:bg-stone-900'}`}
+        className={`w-full shrink-0 cursor-pointer sm:w-64 self-start rounded-xl p-2 text-left transition-colors ${aberto ? '' : 'hover:bg-stone-100 dark:hover:bg-stone-900'}`}
       >
         {foto ? (
           <img
@@ -104,7 +104,7 @@ function Detalhes({ jogador: j }: { jogador: Jogador }) {
     ] as [string, ReactNode][]
   ).filter(([, valor]) => valor !== null && valor !== undefined && valor !== false) // sem dado, sem secao
   return (
-    <div className="flex w-96 flex-col gap-4 p-4 text-sm">
+    <div className="flex w-full flex-col gap-4 p-4 text-sm sm:w-96">
       {j.nomeCompleto && (
         <div>
           <p className="text-xs text-stone-400 dark:text-stone-500">Nome completo</p>
@@ -151,7 +151,7 @@ function Titulos({ titulos }: { titulos: string[] }) {
       </span>
       <ul
         role="tooltip"
-        className="invisible absolute bottom-full left-0 z-20 mb-2 w-max max-w-64 rounded-lg bg-white px-3 py-2 text-xs font-normal text-stone-700 opacity-0 shadow-lg transition-opacity group-focus-within/titulos:visible group-focus-within/titulos:opacity-100 group-hover/titulos:visible group-hover/titulos:opacity-100 dark:bg-stone-900 dark:text-stone-200"
+        className="invisible absolute bottom-full left-0 z-20 mb-2 w-max max-w-64 max-sm:fixed max-sm:inset-x-4 max-sm:bottom-4 max-sm:w-auto max-sm:max-w-none rounded-lg bg-white px-3 py-2 text-xs font-normal text-stone-700 opacity-0 shadow-lg transition-opacity group-focus-within/titulos:visible group-focus-within/titulos:opacity-100 group-hover/titulos:visible group-hover/titulos:opacity-100 dark:bg-stone-900 dark:text-stone-200"
       >
         {titulos.map((t) => (
           <li key={t}>{t}</li>
@@ -204,7 +204,7 @@ export default function Elenco() {
       {POSICOES.map(([posicao, titulo]) => (
         <section key={posicao} id={posicao} className="mb-10 scroll-mt-4">
           <h2 className="mb-2 px-2 text-xs font-medium tracking-widest text-stone-400 uppercase">{titulo}</h2>
-          <ul className="flex flex-wrap gap-2">
+          <ul className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             {jogadores
               .filter((j) => j.posicao === posicao)
               .sort((a, b) => Number(b.numero === aberto) - Number(a.numero === aberto))

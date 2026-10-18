@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { API_URL, ErroApi, admin, token } from '../api'
 
 // Backoffice: valores como estao guardados (valor de mercado em euro, salario em real)
@@ -134,21 +134,29 @@ function Painel({ sair }: { sair: () => void }) {
       })
   }, [versao, sair])
 
-  if (editando) {
-    return (
-      <Formulario
-        jogador={editando === 'novo' ? undefined : editando}
-        sair={sair}
-        fechar={() => {
-          setEditando(null)
-          setVersao((v) => v + 1)
-        }}
-      />
-    )
+  const fecharModal = () => {
+    setEditando(null)
+    setVersao((v) => v + 1)
+  }
+
+  const excluir = async (j: JogadorAdmin) => {
+    if (!confirm(`Excluir ${j.nome}? Essa ação não pode ser desfeita.`)) return
+    try {
+      await admin(`/api/admin/jogadores/${j.id}`, { method: 'DELETE' })
+      setVersao((v) => v + 1)
+    } catch (e) {
+      if (e instanceof ErroApi && e.status === 401) sair()
+      else setErro(e instanceof Error ? e.message : 'Erro ao excluir')
+    }
   }
 
   return (
     <div>
+      {editando && (
+        <Modal fechar={fecharModal}>
+          <Formulario jogador={editando === 'novo' ? undefined : editando} sair={sair} fechar={fecharModal} />
+        </Modal>
+      )}
       <div className="mb-6 flex items-center gap-3">
         <h2 className="text-lg font-semibold">Jogadores</h2>
         <button onClick={() => setEditando('novo')} className={`${botaoPrimario} ml-auto`}>
@@ -166,8 +174,8 @@ function Painel({ sair }: { sair: () => void }) {
           <table className="w-full text-left text-sm">
             <thead className="text-xs tracking-wider text-stone-400 uppercase">
               <tr>
-                {['Nº', 'Nome', 'Posição', 'Salário/mês', 'Mercado', 'Contrato', 'Atualizado'].map((t) => (
-                  <th key={t} className="px-3 py-2 font-medium">
+                {['', 'Nº', 'Nome', 'Posição', 'Salário/mês', 'Mercado', 'Contrato', 'Atualizado', ''].map((t, i) => (
+                  <th key={i} className="px-3 py-2 font-medium">
                     {t}
                   </th>
                 ))}
@@ -180,6 +188,13 @@ function Painel({ sair }: { sair: () => void }) {
                   onClick={() => setEditando(j)}
                   className="cursor-pointer hover:bg-stone-100 dark:hover:bg-stone-900"
                 >
+                  <td className="px-3 py-2">
+                    {j.fotoUrl ? (
+                      <img src={j.fotoUrl} alt="" className="size-9 rounded-md object-cover object-top" />
+                    ) : (
+                      <span className="block size-9 rounded-md bg-stone-200 dark:bg-stone-800" />
+                    )}
+                  </td>
                   <td className="px-3 py-2 tabular-nums">{j.numero}</td>
                   <td className="px-3 py-2 font-medium">{j.nome}</td>
                   <td className="px-3 py-2">{j.posicao}</td>
@@ -193,6 +208,17 @@ function Painel({ sair }: { sair: () => void }) {
                   <td className="px-3 py-2 text-stone-400 tabular-nums">
                     {j.atualizadoEm.split('-').reverse().join('/')}
                   </td>
+                  <td className="px-3 py-2 text-right">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        excluir(j)
+                      }}
+                      className="cursor-pointer rounded-md px-2 py-1 text-xs text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
+                    >
+                      Excluir
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -200,6 +226,26 @@ function Painel({ sair }: { sair: () => void }) {
         </div>
       )}
     </div>
+  )
+}
+
+// <dialog> nativo: Esc fecha, foco fica preso no modal e o fundo nao recebe cliques
+function Modal({ fechar, children }: { fechar: () => void; children: ReactNode }) {
+  const ref = useRef<HTMLDialogElement>(null)
+  useEffect(() => {
+    ref.current?.showModal()
+  }, [])
+  return (
+    <dialog
+      ref={ref}
+      onClose={fechar}
+      // clique no fundo escuro (fora do conteudo) fecha
+      onClick={(e) => e.target === e.currentTarget && fechar()}
+      className="m-auto max-h-[90vh] w-[min(56rem,calc(100vw-2rem))] rounded-2xl bg-stone-50 text-stone-800 shadow-2xl backdrop:bg-black/50 dark:bg-stone-950 dark:text-stone-200"
+    >
+      {/* padding no filho: assim so o fundo escuro conta como "fora" */}
+      <div className="p-6">{children}</div>
+    </dialog>
   )
 }
 
@@ -219,6 +265,9 @@ function Formulario({ jogador, fechar, sair }: { jogador?: JogadorAdmin; fechar:
   const [erro, setErro] = useState('')
   const [errosCampos, setErrosCampos] = useState<Record<string, string>>({})
   const [enviando, setEnviando] = useState(false)
+  const [foto, setFoto] = useState<File | null>(null)
+  const previa = useMemo(() => foto && URL.createObjectURL(foto), [foto])
+  useEffect(() => () => void (previa && URL.revokeObjectURL(previa)), [previa])
 
   const mudar = (k: keyof Campos) => (e: { target: { value: string } }) => setCampos({ ...campos, [k]: e.target.value })
 
@@ -241,29 +290,27 @@ function Formulario({ jogador, fechar, sair }: { jogador?: JogadorAdmin; fechar:
     e.preventDefault()
     executar(async () => {
       const corpo = JSON.stringify(paraEnvio(campos))
-      if (atual) await admin(`/api/admin/jogadores/${atual.id}`, { method: 'PUT', body: corpo })
-      else await admin('/api/admin/jogadores', { method: 'POST', body: corpo })
+      const salvo = atual
+        ? await admin<JogadorAdmin>(`/api/admin/jogadores/${atual.id}`, { method: 'PUT', body: corpo })
+        : await admin<JogadorAdmin>('/api/admin/jogadores', { method: 'POST', body: corpo })
+      // se a foto falhar, os dados ja estao salvos: tentar de novo vira edicao, sem duplicar o jogador
+      setAtual(salvo)
+      if (foto) {
+        const dados = new FormData()
+        dados.append('arquivo', foto)
+        await admin(`/api/admin/jogadores/${salvo.id}/foto`, { method: 'POST', body: dados })
+      }
       fechar()
     })
   }
 
   const remover = () => {
-    if (atual && confirm(`Remover ${atual.nome}? Essa ação não pode ser desfeita.`)) {
+    if (atual && confirm(`Excluir ${atual.nome}? Essa ação não pode ser desfeita.`)) {
       executar(async () => {
         await admin(`/api/admin/jogadores/${atual.id}`, { method: 'DELETE' })
         fechar()
       })
     }
-  }
-
-  const enviarFoto = (arquivo: File | undefined) => {
-    if (!arquivo || !atual) return
-    executar(async () => {
-      const dados = new FormData()
-      dados.append('arquivo', arquivo)
-      const salvo = await admin<JogadorAdmin>(`/api/admin/jogadores/${atual.id}/foto`, { method: 'POST', body: dados })
-      setAtual(salvo)
-    })
   }
 
   const numero = (k: (typeof NUMEROS)[number] | 'salarioMensalReais', rotulo: string) => (
@@ -273,32 +320,32 @@ function Formulario({ jogador, fechar, sair }: { jogador?: JogadorAdmin; fechar:
   )
 
   return (
-    <form onSubmit={salvar} className="flex max-w-3xl flex-col gap-6">
+    <form onSubmit={salvar} className="flex flex-col gap-6">
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold">{atual ? `Editar ${atual.nome}` : 'Novo jogador'}</h2>
-        <button type="button" onClick={fechar} className={`${botaoSecundario} ml-auto`}>
-          Voltar
+        <button type="button" onClick={fechar} aria-label="Fechar" className={`${botaoSecundario} ml-auto`}>
+          ✕
         </button>
       </div>
 
-      {atual && (
-        <div className="flex items-center gap-4">
-          {atual.fotoUrl ? (
-            <img src={atual.fotoUrl} alt="" className="size-24 rounded-lg object-cover object-top" />
-          ) : (
-            <span className="size-24 rounded-lg bg-stone-200 dark:bg-stone-800" />
-          )}
-          <Campo rotulo="Trocar foto (JPEG, PNG ou WebP, até 5 MB)">
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              disabled={enviando}
-              onChange={(e) => enviarFoto(e.target.files?.[0])}
-              className="text-sm"
-            />
-          </Campo>
-        </div>
-      )}
+      <div className="flex items-center gap-4">
+        {previa || atual?.fotoUrl ? (
+          <img src={previa || atual?.fotoUrl || ''} alt="" className="size-24 rounded-lg object-cover object-top" />
+        ) : (
+          <span className="size-24 rounded-lg bg-stone-200 dark:bg-stone-800" />
+        )}
+        <Campo
+          rotulo={`${atual?.fotoUrl ? 'Trocar' : 'Adicionar'} foto (JPEG, PNG ou WebP, até 5 MB) · enviada ao salvar`}
+        >
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={enviando}
+            onChange={(e) => setFoto(e.target.files?.[0] ?? null)}
+            className="text-sm"
+          />
+        </Campo>
+      </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {numero('numero', 'Número')}
@@ -356,7 +403,7 @@ function Formulario({ jogador, fechar, sair }: { jogador?: JogadorAdmin; fechar:
             onClick={remover}
             className={`${botaoSecundario} ml-auto text-red-600`}
           >
-            Remover jogador
+            Excluir jogador
           </button>
         )}
       </div>

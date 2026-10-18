@@ -17,51 +17,54 @@ const FOTOS_LOCAIS = Object.fromEntries(
   ).map(([caminho, url]) => [caminho.split('/').pop()!.split('.')[0], url]),
 )
 
-function PlayerCard({ jogador }: { jogador: Jogador }) {
+function PlayerRow({ jogador }: { jogador: Jogador }) {
   const foto = FOTOS_LOCAIS[jogador.numero] ?? jogador.foto
   return (
-    <article className="relative overflow-hidden rounded-lg bg-neutral-900 text-center">
-      {foto ? (
-        <img
-          src={foto}
-          alt={jogador.nome}
-          loading="lazy"
-          className="aspect-3/4 w-full bg-neutral-800 object-cover object-top"
-        />
-      ) : (
-        <div className="grid aspect-3/4 w-full place-items-center bg-neutral-800 text-6xl text-neutral-600">
-          {jogador.numero}
-        </div>
-      )}
-      <span className="absolute top-2 left-2 rounded bg-black px-2 py-0.5 font-bold">{jogador.numero}</span>
-      <h3 className="mx-2 mt-2.5 font-semibold">{jogador.nome}</h3>
-      <p className="mb-3 text-sm text-neutral-400">{jogador.posicao}</p>
-    </article>
+    <li>
+      <details className="group">
+        <summary className="flex cursor-pointer list-none items-center gap-4 px-4 py-3 transition-colors hover:bg-stone-100">
+          <span className="w-8 text-right text-sm text-stone-400 tabular-nums">{jogador.numero}</span>
+          {foto ? (
+            <img src={foto} alt="" loading="lazy" className="size-9 rounded-full bg-stone-200 object-cover object-top" />
+          ) : (
+            <span className="size-9 rounded-full bg-stone-200" />
+          )}
+          <span className="flex-1 font-medium">{jogador.nome}</span>
+          <span className="text-sm text-stone-500">{jogador.posicao}</span>
+          <span className="text-stone-400 transition-transform group-open:rotate-90">›</span>
+        </summary>
+        <div className="px-4 pt-1 pb-4 pl-29 text-sm text-stone-500">Expandido</div>
+      </details>
+    </li>
   )
 }
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-neutral-950 text-white">
-      <header className="flex items-center gap-4 border-b-2 border-white bg-black px-6 py-4">
-        <img src={logo} alt="Escudo do Corinthians" className="h-16" />
-        <h1 className="text-2xl font-bold tracking-widest uppercase">Elenco Profissional</h1>
+    <div className="min-h-screen bg-stone-50 text-stone-800">
+      <header className="border-b border-stone-200">
+        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-5">
+          <img src={logo} alt="Escudo do Corinthians" className="h-9" />
+          <h1 className="text-lg font-semibold tracking-tight">
+            Todo Poderoso <span className="font-normal text-stone-400">| Hub</span>
+          </h1>
+        </div>
       </header>
-      <main className="mx-auto max-w-6xl p-4">
+      <main className="mx-auto max-w-3xl px-4 py-8">
         {POSICOES.map(([posicao, titulo]) => (
-          <section key={posicao}>
-            <h2 className="my-6 border-l-4 border-white pl-2.5 text-xl font-bold uppercase">{titulo}</h2>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-4">
+          <section key={posicao} className="mb-8">
+            <h2 className="mb-2 px-4 text-xs font-medium tracking-widest text-stone-400 uppercase">{titulo}</h2>
+            <ul className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white">
               {jogadores
                 .filter((j) => j.posicao === posicao)
                 .map((j) => (
-                  <PlayerCard key={j.numero} jogador={j} />
+                  <PlayerRow key={j.numero} jogador={j} />
                 ))}
-            </div>
+            </ul>
           </section>
         ))}
       </main>
-      <footer className="p-6 text-center text-xs text-neutral-500">Dados e fotos: Wikipedia / Wikimedia Commons</footer>
+      <footer className="pb-8 text-center text-xs text-stone-400">Dados: Wikipedia / Wikimedia Commons</footer>
     </div>
   )
 }

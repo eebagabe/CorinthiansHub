@@ -54,18 +54,8 @@ function tempoRestante(fim: string) {
     .join(' e ')
 }
 
-// Foto local em src/assets/players/<numero>.<ext> tem prioridade sobre a da Wikipedia
-const FOTOS_LOCAIS = Object.fromEntries(
-  Object.entries(
-    import.meta.glob<string>('../assets/players/*', { eager: true, import: 'default', query: '?url' }),
-  ).map(([caminho, url]) => [caminho.split('/').pop()!.split('.')[0], url]),
-)
-
 function PlayerCard({ jogador, aberto, onToggle }: { jogador: Jogador; aberto: boolean; onToggle: () => void }) {
-  // foto enviada pelo backoffice > foto local do repositorio > foto da Wikipedia
-  // shortcut: some quando as fotos locais forem migradas para o R2
-  const enviada = jogador.fotoUrl && !jogador.fotoUrl.includes('wikimedia.org') ? jogador.fotoUrl : null
-  const foto = enviada ?? FOTOS_LOCAIS[jogador.numero] ?? jogador.fotoUrl
+  const foto = jogador.fotoUrl
   return (
     <li
       style={{ viewTransitionName: `jogador-${jogador.numero}` }}

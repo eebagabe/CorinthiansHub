@@ -1,4 +1,4 @@
-"""Gera data/players.json a partir do elenco principal na Wikipedia (EN), com fotos do Commons."""
+"""Gera src/data/players.json a partir do elenco principal na Wikipedia (EN), com fotos do Commons."""
 import json
 import re
 import urllib.parse
@@ -34,6 +34,6 @@ for p in players:
     p["foto"] = thumbs.get(redirects.get(t, t))
     del p["wiki"]
 
-with open("data/players.json", "w", encoding="utf-8") as f:
+with open("src/data/players.json", "w", encoding="utf-8") as f:
     json.dump(players, f, ensure_ascii=False, indent=2)
 print(f"{len(players)} jogadores, {sum(1 for p in players if p['foto'])} com foto")

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { flushSync } from 'react-dom'
+import detalhes from '../data/detalhes.json'
 import jogadores from '../data/players.json'
 
 const POSICOES = [
@@ -10,6 +11,16 @@ const POSICOES = [
 ] as const
 
 type Jogador = (typeof jogadores)[number]
+type Detalhe = (typeof detalhes)[keyof typeof detalhes]
+
+// Jogos oficiais pelo profissional do Corinthians (sem amistosos). Fonte: ogol.com.br, 18/10/2026
+const DETALHES: Record<string, Detalhe | undefined> = detalhes
+
+function idade(nascimento: string) {
+  const [a, m, d] = nascimento.split('-').map(Number)
+  const hoje = new Date()
+  return hoje.getFullYear() - a - (hoje.getMonth() + 1 < m || (hoje.getMonth() + 1 === m && hoje.getDate() < d) ? 1 : 0)
+}
 
 // Foto local em src/assets/players/<numero>.<ext> tem prioridade sobre a da Wikipedia
 const FOTOS_LOCAIS = Object.fromEntries(
@@ -42,8 +53,28 @@ function PlayerCard({ jogador, aberto, onToggle }: { jogador: Jogador; aberto: b
         </span>
         <span className={`block text-sm ${aberto ? 'text-stone-300 dark:text-stone-600' : 'text-stone-500 dark:text-stone-400'}`}>{jogador.posicao}</span>
       </button>
-      {aberto && <div className="w-64 p-4 text-sm text-stone-300 dark:text-stone-600">Expandido</div>}
+      {aberto && <Detalhes detalhe={DETALHES[jogador.numero]} />}
     </li>
+  )
+}
+
+function Detalhes({ detalhe }: { detalhe?: Detalhe }) {
+  if (!detalhe) return <div className="w-64 p-4 text-sm text-stone-300 dark:text-stone-600">Expandido</div>
+  const itens = [
+    ['Nome completo', detalhe.nomeCompleto],
+    ['Idade', `${idade(detalhe.nascimento)} anos`],
+    ['Jogos pelo Corinthians', detalhe.jogos],
+    ['Jogos como titular', detalhe.titular],
+  ] as const
+  return (
+    <dl className="w-64 space-y-3 p-4 text-sm">
+      {itens.map(([rotulo, valor]) => (
+        <div key={rotulo}>
+          <dt className="text-xs text-stone-400 dark:text-stone-500">{rotulo}</dt>
+          <dd className="font-medium">{valor}</dd>
+        </div>
+      ))}
+    </dl>
   )
 }
 

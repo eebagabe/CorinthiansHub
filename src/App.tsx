@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import logo from './assets/logo.svg'
+import Admin from './pages/Admin'
 import Elenco from './pages/Elenco'
 import Home from './pages/Home'
 
 // shortcut: roteamento por hash (#/elenco), trocar por react-router quando houver rotas com parametros
-const PAGINAS = { '': ['Home', Home], elenco: ['Elenco', Elenco] } as const
+const PAGINAS = { '': ['Home', Home], elenco: ['Elenco', Elenco], admin: ['Admin', Admin] } as const
 type Rota = keyof typeof PAGINAS
+// backoffice fica fora do menu publico: acesso so pelo endereco #/admin
+const MENU: Rota[] = ['', 'elenco']
 
 const rotaAtual = (): Rota => {
   const r = location.hash.replace('#/', '')
@@ -42,7 +45,7 @@ export default function App() {
             </h1>
           </a>
           <nav className="flex gap-6 text-sm">
-            {(Object.keys(PAGINAS) as Rota[]).map((r) => (
+            {MENU.map((r) => (
               <a
                 key={r}
                 href={`#/${r}`}
@@ -59,14 +62,21 @@ export default function App() {
                 aria-label="Sobre os dados"
                 className="grid size-8 cursor-pointer list-none place-items-center rounded-full text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 group-open:bg-stone-100 group-open:text-stone-700 dark:hover:bg-stone-800 dark:hover:text-stone-200 dark:group-open:bg-stone-800 dark:group-open:text-stone-200"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="size-5">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  className="size-5"
+                >
                   <circle cx="12" cy="12" r="10" />
                   <path d="M12 16v-4M12 8h.01" />
                 </svg>
               </summary>
               <p className="absolute right-0 z-10 mt-2 w-80 rounded-xl border border-stone-200 bg-white p-4 text-xs leading-relaxed text-stone-500 shadow-lg dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400">
-                As informações deste site são reunidas a partir de fontes públicas, como Wikipedia e Wikimedia Commons, e
-                revisadas com cuidado. Ainda assim, podem conter imprecisões ou estar desatualizadas. Trabalhamos
+                As informações deste site são reunidas a partir de fontes públicas, como Wikipedia e Wikimedia Commons,
+                e revisadas com cuidado. Ainda assim, podem conter imprecisões ou estar desatualizadas. Trabalhamos
                 continuamente para manter os dados corretos e atualizados.
               </p>
             </details>

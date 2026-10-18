@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
-import detalhes from '../data/detalhes.json'
-import jogadores from '../data/players.json'
+import { API_URL } from '../api'
 
 const POSICOES = [
   ['Goleiro', 'Goleiros'],
@@ -10,16 +9,49 @@ const POSICOES = [
   ['Atacante', 'Atacantes'],
 ] as const
 
-type Jogador = (typeof jogadores)[number]
-type Detalhe = (typeof detalhes)[keyof typeof detalhes]
+// GET /api/jogadores (backend); campos de detalhe ficam null enquanto nao foram coletados
+type Jogador = {
+  numero: number
+  nome: string
+  posicao: string
+  fotoUrl: string | null
+  nomeCompleto: string | null
+  nascimento: string | null
+  jogos: number | null
+  titular: number | null
+  jogosSemSofrerGols: number | null
+  jogosSelecao: number | null
+  valorMercadoReais: number | null
+  fimContrato: string | null
+  salarioMensalReais: number // estimativa; 0 = nao encontrado
+  titulos: string[]
+  atualizadoEm: string
+}
 
-// Jogos oficiais pelo profissional do Corinthians (sem amistosos). Fonte: ogol.com.br, 18/10/2026
-const DETALHES: Record<string, Detalhe | undefined> = detalhes
+const data = (iso: string) => new Date(`${iso}T12:00`).toLocaleDateString('pt-BR')
+const reais = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+  notation: 'compact',
+  maximumFractionDigits: 1,
+})
 
 function idade(nascimento: string) {
   const [a, m, d] = nascimento.split('-').map(Number)
   const hoje = new Date()
   return hoje.getFullYear() - a - (hoje.getMonth() + 1 < m || (hoje.getMonth() + 1 === m && hoje.getDate() < d) ? 1 : 0)
+}
+
+function tempoRestante(fim: string) {
+  const [a, m, d] = fim.split('-').map(Number)
+  const hoje = new Date()
+  const meses = (a - hoje.getFullYear()) * 12 + (m - 1 - hoje.getMonth()) - (d < hoje.getDate() ? 1 : 0)
+  if (meses < 0) return 'encerrado'
+  if (meses < 1) return 'menos de 1 mês'
+  const [anos, resto] = [Math.floor(meses / 12), meses % 12]
+  return [anos && `${anos} ${anos > 1 ? 'anos' : 'ano'}`, resto && `${resto} ${resto > 1 ? 'meses' : 'mês'}`]
+    .filter(Boolean)
+    .join(' e ')
 }
 
 // Foto local em src/assets/players/<numero>.<ext> tem prioridade sobre a da Wikipedia
@@ -30,7 +62,10 @@ const FOTOS_LOCAIS = Object.fromEntries(
 )
 
 function PlayerCard({ jogador, aberto, onToggle }: { jogador: Jogador; aberto: boolean; onToggle: () => void }) {
-  const foto = FOTOS_LOCAIS[jogador.numero] ?? jogador.foto
+  // foto enviada pelo backoffice > foto local do repositorio > foto da Wikipedia
+  // shortcut: some quando as fotos locais forem migradas para o R2
+  const enviada = jogador.fotoUrl && !jogador.fotoUrl.includes('wikimedia.org') ? jogador.fotoUrl : null
+  const foto = enviada ?? FOTOS_LOCAIS[jogador.numero] ?? jogador.fotoUrl
   return (
     <li
       style={{ viewTransitionName: `jogador-${jogador.numero}` }}
@@ -40,10 +75,15 @@ function PlayerCard({ jogador, aberto, onToggle }: { jogador: Jogador; aberto: b
         type="button"
         onClick={onToggle}
         aria-expanded={aberto}
-        className={`w-64 shrink-0 cursor-pointer rounded-xl p-2 text-left transition-colors ${aberto ? '' : 'hover:bg-stone-100 dark:hover:bg-stone-900'}`}
+        className={`w-64 shrink-0 cursor-pointer self-start rounded-xl p-2 text-left transition-colors ${aberto ? '' : 'hover:bg-stone-100 dark:hover:bg-stone-900'}`}
       >
         {foto ? (
-          <img src={foto} alt="" loading="lazy" className="aspect-square w-full rounded-lg bg-stone-200 object-cover dark:bg-stone-800 object-top" />
+          <img
+            src={foto}
+            alt=""
+            loading="lazy"
+            className="aspect-square w-full rounded-lg bg-stone-200 object-cover dark:bg-stone-800 object-top"
+          />
         ) : (
           <span className="block aspect-square w-full rounded-lg bg-stone-200 dark:bg-stone-800" />
         )}
@@ -51,35 +91,103 @@ function PlayerCard({ jogador, aberto, onToggle }: { jogador: Jogador; aberto: b
           <span className="text-sm text-stone-400 tabular-nums">{jogador.numero}</span>
           <span className="font-medium">{jogador.nome}</span>
         </span>
-        <span className={`block text-sm ${aberto ? 'text-stone-300 dark:text-stone-600' : 'text-stone-500 dark:text-stone-400'}`}>{jogador.posicao}</span>
+        <span
+          className={`block text-sm ${aberto ? 'text-stone-300 dark:text-stone-600' : 'text-stone-500 dark:text-stone-400'}`}
+        >
+          {jogador.posicao}
+        </span>
       </button>
-      {aberto && <Detalhes detalhe={DETALHES[jogador.numero]} />}
+      {aberto && <Detalhes jogador={jogador} />}
     </li>
   )
 }
 
-function Detalhes({ detalhe }: { detalhe?: Detalhe }) {
-  if (!detalhe) return <div className="w-64 p-4 text-sm text-stone-300 dark:text-stone-600">Expandido</div>
-  const itens = [
-    ['Nome completo', detalhe.nomeCompleto],
-    ['Idade', `${idade(detalhe.nascimento)} anos`],
-    ['Jogos pelo Corinthians', detalhe.jogos],
-    ['Jogos como titular', detalhe.titular],
-  ] as const
+function Detalhes({ jogador: j }: { jogador: Jogador }) {
+  const itens = (
+    [
+      ['Idade', j.nascimento && `${idade(j.nascimento)} anos`],
+      ['Valor de mercado', j.valorMercadoReais && reais.format(j.valorMercadoReais)],
+      ['Salário estimado', j.salarioMensalReais > 0 && `${reais.format(j.salarioMensalReais)}/mês`],
+      ['Jogos pelo Corinthians', j.jogos],
+      ['Jogos como titular', j.titular],
+      ['Jogos sem sofrer gols', j.jogosSemSofrerGols],
+      ['Jogos pela seleção', j.jogosSelecao],
+      ['Títulos pelo Corinthians', j.titulos.length > 0 && <Titulos key="titulos" titulos={j.titulos} />],
+    ] as [string, ReactNode][]
+  ).filter(([, valor]) => valor !== null && valor !== undefined && valor !== false) // sem dado, sem secao
   return (
-    <dl className="w-64 space-y-3 p-4 text-sm">
-      {itens.map(([rotulo, valor]) => (
-        <div key={rotulo}>
-          <dt className="text-xs text-stone-400 dark:text-stone-500">{rotulo}</dt>
-          <dd className="font-medium">{valor}</dd>
+    <div className="flex w-96 flex-col gap-4 p-4 text-sm">
+      {j.nomeCompleto && (
+        <div>
+          <p className="text-xs text-stone-400 dark:text-stone-500">Nome completo</p>
+          <p className="font-medium">{j.nomeCompleto}</p>
         </div>
-      ))}
-    </dl>
+      )}
+      {itens.length > 0 && (
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+          {itens.map(([rotulo, valor]) => (
+            <div key={rotulo}>
+              <dt className="text-xs text-stone-400 dark:text-stone-500">{rotulo}</dt>
+              <dd className="font-medium tabular-nums">{valor}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {j.fimContrato && (
+        <div>
+          <p className="text-xs text-stone-400 dark:text-stone-500">Contrato</p>
+          <p className="font-medium">
+            até {data(j.fimContrato)}
+            <span className="font-normal text-stone-400 dark:text-stone-500"> · {tempoRestante(j.fimContrato)}</span>
+          </p>
+        </div>
+      )}
+      <p className="mt-auto text-[11px] text-stone-500">
+        Atualizado em {data(j.atualizadoEm)} · jogos: ogol.com.br · salário, mercado e contrato: levantamento em apps e
+        imprensa
+      </p>
+    </div>
+  )
+}
+
+function Titulos({ titulos }: { titulos: string[] }) {
+  return (
+    <span className="group/titulos relative inline-flex items-center gap-1.5">
+      {titulos.length}
+      <span
+        tabIndex={0}
+        aria-label={`Ver títulos: ${titulos.join(', ')}`}
+        className="grid size-4 cursor-help place-items-center rounded-full border border-current text-[10px] leading-none opacity-60 outline-none hover:opacity-100 focus-visible:opacity-100"
+      >
+        i
+      </span>
+      <ul
+        role="tooltip"
+        className="invisible absolute bottom-full left-0 z-20 mb-2 w-max max-w-64 rounded-lg bg-white px-3 py-2 text-xs font-normal text-stone-700 opacity-0 shadow-lg transition-opacity group-focus-within/titulos:visible group-focus-within/titulos:opacity-100 group-hover/titulos:visible group-hover/titulos:opacity-100 dark:bg-stone-900 dark:text-stone-200"
+      >
+        {titulos.map((t) => (
+          <li key={t}>{t}</li>
+        ))}
+      </ul>
+    </span>
   )
 }
 
 export default function Elenco() {
+  const [jogadores, setJogadores] = useState<Jogador[] | null>(null)
+  const [erro, setErro] = useState(false)
   const [aberto, setAberto] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/jogadores`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then(setJogadores)
+      .catch(() => setErro(true))
+  }, [])
+
+  if (erro)
+    return <p className="text-sm text-stone-500">Não foi possível carregar o elenco. Tente novamente mais tarde.</p>
+  if (!jogadores) return <p className="text-sm text-stone-400">Carregando elenco...</p>
 
   function toggle(j: Jogador) {
     const atualizar = () => flushSync(() => setAberto(aberto === j.numero ? null : j.numero))
@@ -89,17 +197,35 @@ export default function Elenco() {
     if (aberto !== j.numero) document.getElementById(j.posicao)?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  return POSICOES.map(([posicao, titulo]) => (
-    <section key={posicao} id={posicao} className="mb-10 scroll-mt-4">
-      <h2 className="mb-2 px-2 text-xs font-medium tracking-widest text-stone-400 uppercase">{titulo}</h2>
-      <ul className="flex flex-wrap gap-2">
-        {jogadores
-          .filter((j) => j.posicao === posicao)
-          .sort((a, b) => Number(b.numero === aberto) - Number(a.numero === aberto))
-          .map((j) => (
-            <PlayerCard key={j.numero} jogador={j} aberto={aberto === j.numero} onToggle={() => toggle(j)} />
-          ))}
-      </ul>
-    </section>
-  ))
+  const comSalario = jogadores.filter((j) => j.salarioMensalReais > 0)
+  const folhaMensal = comSalario.reduce((soma, j) => soma + j.salarioMensalReais, 0)
+
+  return (
+    <>
+      <div className="mb-10 px-2">
+        <p className="text-xs font-medium tracking-widest text-stone-400 uppercase">Folha salarial estimada</p>
+        <p className="mt-1 text-3xl font-semibold tabular-nums">
+          {reais.format(folhaMensal)}
+          <span className="text-base font-normal text-stone-400">/mês</span>
+        </p>
+        <p className="mt-1 text-xs text-stone-400 dark:text-stone-500">
+          Soma de {comSalario.length} de {jogadores.length} jogadores com salário encontrado · estimativa de apps e
+          imprensa, o clube não divulga salários
+        </p>
+      </div>
+      {POSICOES.map(([posicao, titulo]) => (
+        <section key={posicao} id={posicao} className="mb-10 scroll-mt-4">
+          <h2 className="mb-2 px-2 text-xs font-medium tracking-widest text-stone-400 uppercase">{titulo}</h2>
+          <ul className="flex flex-wrap gap-2">
+            {jogadores
+              .filter((j) => j.posicao === posicao)
+              .sort((a, b) => Number(b.numero === aberto) - Number(a.numero === aberto))
+              .map((j) => (
+                <PlayerCard key={j.numero} jogador={j} aberto={aberto === j.numero} onToggle={() => toggle(j)} />
+              ))}
+          </ul>
+        </section>
+      ))}
+    </>
+  )
 }

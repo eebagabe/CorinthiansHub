@@ -22,18 +22,18 @@ function PlayerRow({ jogador }: { jogador: Jogador }) {
   return (
     <li>
       <details className="group">
-        <summary className="flex cursor-pointer list-none items-center gap-4 px-4 py-3 transition-colors hover:bg-stone-100">
+        <summary className="flex cursor-pointer list-none items-center gap-4 px-4 py-3 rounded-xl transition-colors hover:bg-stone-100">
           <span className="w-8 text-right text-sm text-stone-400 tabular-nums">{jogador.numero}</span>
           {foto ? (
-            <img src={foto} alt="" loading="lazy" className="size-28 rounded-lg bg-stone-200 object-cover object-top" />
+            <img src={foto} alt="" loading="lazy" className="size-40 rounded-lg bg-stone-200 object-cover object-top" />
           ) : (
-            <span className="size-28 rounded-lg bg-stone-200" />
+            <span className="size-40 rounded-lg bg-stone-200" />
           )}
           <span className="flex-1 font-medium">{jogador.nome}</span>
           <span className="text-sm text-stone-500">{jogador.posicao}</span>
           <span className="text-stone-400 transition-transform group-open:rotate-90">›</span>
         </summary>
-        <div className="px-4 pt-1 pb-4 pl-48 text-sm text-stone-500">Expandido</div>
+        <div className="px-4 pt-1 pb-4 pl-60 text-sm text-stone-500">Expandido</div>
       </details>
     </li>
   )
@@ -54,7 +54,7 @@ export default function App() {
         {POSICOES.map(([posicao, titulo]) => (
           <section key={posicao} className="mb-8">
             <h2 className="mb-2 px-4 text-xs font-medium tracking-widest text-stone-400 uppercase">{titulo}</h2>
-            <ul className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white">
+            <ul className="divide-y divide-stone-200">
               {jogadores
                 .filter((j) => j.posicao === posicao)
                 .map((j) => (

@@ -1,0 +1,233 @@
+[
+  {
+    "numero": 1,
+    "nome": "Hugo Souza",
+    "posicao": "Goleiro",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Hugo_Souza_2025_%28cropped%29.jpg/500px-Hugo_Souza_2025_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 2,
+    "nome": "Matheuzinho",
+    "posicao": "Defensor",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/13/Matheuzinho_2026_%28cropped%29.jpg/500px-Matheuzinho_2026_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 3,
+    "nome": "Gabriel Paulista",
+    "posicao": "Defensor",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/26/Gabriel_Paulista_20240803.jpg/500px-Gabriel_Paulista_20240803.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 4,
+    "nome": "João Pedro",
+    "posicao": "Defensor",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/32/Joao-pedro-tchoca-entrevista-2026.png/500px-Joao-pedro-tchoca-entrevista-2026.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 5,
+    "nome": "André Ramalho",
+    "posicao": "Defensor",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cb/FC_Admira_Wacker_M%C3%B6dling_vs._FC_Red_Bull_Salzburg_2018-04-15_%28058%29.jpg/500px-FC_Admira_Wacker_M%C3%B6dling_vs._FC_Red_Bull_Salzburg_2018-04-15_%28058%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 7,
+    "nome": "Breno Bidon",
+    "posicao": "Meio-campista",
+    "nacionalidade": "BRA",
+    "foto": "https://upload.wikimedia.org/wikipedia/commons/1/1d/Breno-de-souza-bidon-no-corinthians_y_corinthians_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "numero": 8,
+    "nome": "Rodrigo Garro",
+    "posicao": "Meio-campista",
+    "nacionalidade": "ARG",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Rodrigo_Garro_2025.jpg/500px-Rodrigo_Garro_2025.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 9,
+    "nome": "Yuri Alberto",
+    "posicao": "Atacante",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/Brasileir%C3%A3o_2022_Corinthians_2x0_Cuiab%C3%A1_%2852661306474%29_%28cropped%29.jpg/500px-Brasileir%C3%A3o_2022_Corinthians_2x0_Cuiab%C3%A1_%2852661306474%29_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 10,
+    "nome": "Memphis Depay",
+    "posicao": "Atacante",
+    "nacionalidade": "NED",
+    "foto": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Memphis_Depay_2019.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "numero": 11,
+    "nome": "Vitinho",
+    "posicao": "Meio-campista",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/af/Vitinho.jpg/500px-Vitinho.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 13,
+    "nome": "Gustavo Henrique",
+    "posicao": "Defensor",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dd/Gustavo_Henrique_%28Press_Conference%2C_August_2022%29.png/500px-Gustavo_Henrique_%28Press_Conference%2C_August_2022%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 14,
+    "nome": "Raniele",
+    "posicao": "Meio-campista",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/Raniele_2026.png/500px-Raniele_2026.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 18,
+    "nome": "Pedro Raul",
+    "posicao": "Atacante",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Pedro_Raul_-_S%C3%89RIE_A_-_CORINTHIANS_1_X_0_GOI%C3%81S_-_IMG_2324_%28cropped%29.jpg/500px-Pedro_Raul_-_S%C3%89RIE_A_-_CORINTHIANS_1_X_0_GOI%C3%81S_-_IMG_2324_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 19,
+    "nome": "André Carrillo",
+    "posicao": "Meio-campista",
+    "nacionalidade": "PER",
+    "foto": "https://upload.wikimedia.org/wikipedia/commons/6/6e/CSKA_Sporting_%283%29_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "numero": 20,
+    "nome": "Pedro Milans",
+    "posicao": "Defensor",
+    "nacionalidade": "URU",
+    "foto": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Pe%C3%B1arol_gole%C3%B3_4-0_a_The_Strongest_-_240814-5965-jikatu_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "numero": 21,
+    "nome": "Matheus Bidu",
+    "posicao": "Defensor",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Matheus-bidu-entrevista-2026_%28cropped%29.png/500px-Matheus-bidu-entrevista-2026_%28cropped%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 23,
+    "nome": "Matheus Pereira",
+    "posicao": "Meio-campista",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Matheus-pereira-entrevista-2026_%28cropped%29.png/500px-Matheus-pereira-entrevista-2026_%28cropped%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 26,
+    "nome": "Fabrizio Angileri",
+    "posicao": "Defensor",
+    "nacionalidade": "ARG",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Palestino_-_River_Plate_20190424_06.jpg/500px-Palestino_-_River_Plate_20190424_06.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 29,
+    "nome": "Allan",
+    "posicao": "Meio-campista",
+    "nacionalidade": "BRA",
+    "foto": "https://upload.wikimedia.org/wikipedia/commons/2/25/Allan_Rodrigues_de_Souza_1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "numero": 31,
+    "nome": "Kayke",
+    "posicao": "Atacante",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ce/Kayke-entrevista-2025_%28cropped%29.png/500px-Kayke-entrevista-2025_%28cropped%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 35,
+    "nome": "Charles",
+    "posicao": "Meio-campista",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/12/CharlesInter2017.jpg/500px-CharlesInter2017.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 37,
+    "nome": "Kaio César",
+    "posicao": "Atacante",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Kaio-cesar-press-conference-2026.png/500px-Kaio-cesar-press-conference-2026.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 40,
+    "nome": "Felipe Longo",
+    "posicao": "Goleiro",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/Felipe-longo-entrevista-2025.png/500px-Felipe-longo-entrevista-2025.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 46,
+    "nome": "Hugo Farias",
+    "posicao": "Defensor",
+    "nacionalidade": "BRA",
+    "foto": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Hugo_Goi%C3%A1s_2021.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  },
+  {
+    "numero": 49,
+    "nome": "André",
+    "posicao": "Meio-campista",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/Andre-entrevista-2025_%28cropped%29.png/500px-Andre-entrevista-2025_%28cropped%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 51,
+    "nome": "Kauê",
+    "posicao": "Goleiro",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/Kaue-camargo-entrevista-2026.png/500px-Kaue-camargo-entrevista-2026.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 52,
+    "nome": "Zakaria Labyad",
+    "posicao": "Meio-campista",
+    "nacionalidade": "MAR",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/%D0%9E%D1%82%D0%BA%D1%80%D1%8B%D1%82%D0%B0%D1%8F_%D1%82%D1%80%D0%B5%D0%BD%D0%B8%D1%80%D0%BE%D0%B2%D0%BA%D0%B0_%C2%AB%D0%90%D1%8F%D0%BA%D1%81%D0%B0%C2%BB_%D0%BF%D0%B5%D1%80%D0%B5%D0%B4_%D0%BC%D0%B0%D1%82%D1%87%D0%B5%D0%BC_%D1%81_%C2%AB%D0%94%D0%B8%D0%BD%D0%B0%D0%BC%D0%BE%C2%BB._27_%D0%B0%D0%B2%D0%B3%D1%83%D1%81%D1%82%D0%B0_2018_%D0%B3%D0%BE%D0%B4%D0%B0_%E2%80%94_900376_%28Zakaria_Labyad%29.jpg/500px-thumbnail.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 54,
+    "nome": "Luiz Gustavo",
+    "posicao": "Meio-campista",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/Luiz-gustavo-bahia-entrevista-2023_%28cropped%29.png/500px-Luiz-gustavo-bahia-entrevista-2023_%28cropped%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 55,
+    "nome": "Iago Machado",
+    "posicao": "Defensor",
+    "nacionalidade": "BRA",
+    "foto": null
+  },
+  {
+    "numero": 56,
+    "nome": "Gui Negão",
+    "posicao": "Atacante",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/56/Gui-negao-entrevista-2025_%28cropped%29.png/500px-Gui-negao-entrevista-2025_%28cropped%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 61,
+    "nome": "Dieguinho",
+    "posicao": "Atacante",
+    "nacionalidade": "BRA",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/Dieguinho-entrevista-2025_%28cropped%29.png/500px-Dieguinho-entrevista-2025_%28cropped%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 77,
+    "nome": "Jesse Lingard",
+    "posicao": "Meio-campista",
+    "nacionalidade": "ENG",
+    "foto": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/240609_FC_%EC%84%9C%EC%9A%B8_%ED%8C%AC%EC%82%AC%EC%9D%B8%ED%9A%8C_%28Jesse_Lingard%29.jpg/500px-240609_FC_%EC%84%9C%EC%9A%B8_%ED%8C%AC%EC%82%AC%EC%9D%B8%ED%9A%8C_%28Jesse_Lingard%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  },
+  {
+    "numero": 80,
+    "nome": "Alex Santana",
+    "posicao": "Meio-campista",
+    "nacionalidade": "BRA",
+    "foto": null
+  }
+]

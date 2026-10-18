@@ -22,6 +22,9 @@ type Jogador = {
   titular: number | null
   jogosSemSofrerGols: number | null
   jogosSelecao: number | null
+  gols: number | null
+  assistencias: number | null
+  penaltisDefendidos: number | null // so goleiros
   multaNacionalReais: number | null
   multaInternacionalReais: number | null
   valorAquisicaoReais: number | null // 0 = sem custo
@@ -98,7 +101,10 @@ function Detalhes({ jogador: j }: { jogador: Jogador }) {
       ['Salário estimado', j.salarioMensalReais > 0 && `${reais.format(j.salarioMensalReais)}/mês`],
       ['Jogos pelo Corinthians', j.jogos],
       ['Jogos como titular', j.titular],
+      ['Gols', j.gols],
+      ['Assistências', j.assistencias],
       ['Jogos sem sofrer gols', j.jogosSemSofrerGols],
+      ['Pênaltis defendidos', j.penaltisDefendidos],
       ['Jogos pela seleção', j.jogosSelecao],
       ['Títulos pelo Corinthians', j.titulos.length > 0 && <Titulos key="titulos" titulos={j.titulos} />],
     ] as [string, ReactNode][]
@@ -131,8 +137,8 @@ function Detalhes({ jogador: j }: { jogador: Jogador }) {
         </div>
       )}
       <p className="mt-auto text-[11px] text-stone-500">
-        Atualizado em {data(j.atualizadoEm)} · jogos: ogol.com.br · salário, multas, aquisição e contrato: levantamento
-        em apps e imprensa
+        Atualizado em {data(j.atualizadoEm)} · jogos, gols e assistências: ogol.com.br · pênaltis: Transfermarkt ·
+        salário, multas, aquisição e contrato: levantamento em apps e imprensa
       </p>
     </div>
   )

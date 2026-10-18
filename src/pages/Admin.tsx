@@ -17,6 +17,9 @@ type JogadorAdmin = {
   titular: number | null
   jogosSemSofrerGols: number | null
   jogosSelecao: number | null
+  gols: number | null
+  assistencias: number | null
+  penaltisDefendidos: number | null // so goleiros
   multaNacionalReais: number | null
   multaInternacionalEuros: number | null
   valorAquisicaoReais: number | null // 0 = sem custo
@@ -28,7 +31,16 @@ type JogadorAdmin = {
 }
 
 const POSICOES = ['Goleiro', 'Defensor', 'Meio-campista', 'Atacante']
-const NUMEROS = ['numero', 'jogos', 'titular', 'jogosSemSofrerGols', 'jogosSelecao'] as const
+const NUMEROS = [
+  'numero',
+  'jogos',
+  'titular',
+  'jogosSemSofrerGols',
+  'jogosSelecao',
+  'gols',
+  'assistencias',
+  'penaltisDefendidos',
+] as const
 const TEXTOS = ['nome', 'posicao', 'nacionalidade', 'nomeCompleto', 'fontes'] as const
 // moedas e datas ficam mascaradas no formulario e sao convertidas em paraEnvio
 type Campos = Record<
@@ -672,7 +684,10 @@ function Formulario({ jogador, fechar, sair }: { jogador?: JogadorAdmin; fechar:
         {moeda('multaInternacionalEuros', 'Multa internacional', 'EUR')}
         {numero('jogos', 'Jogos pelo Corinthians')}
         {numero('titular', 'Jogos como titular')}
+        {numero('gols', 'Gols')}
+        {numero('assistencias', 'Assistências')}
         {numero('jogosSemSofrerGols', 'Jogos sem sofrer gols')}
+        {campos.posicao === 'Goleiro' && numero('penaltisDefendidos', 'Pênaltis defendidos')}
         {numero('jogosSelecao', 'Jogos pela seleção')}
         <div className="col-span-2">
           <Campo rotulo="Títulos pelo Corinthians (um por linha)" erro={errosCampos.titulos}>

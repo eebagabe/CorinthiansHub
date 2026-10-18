@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { API_URL, ErroApi, admin, token } from '../api'
+import { dataParaIso, isoParaData, mascararData, mascararMoeda, moedaParaNumero } from '../mascaras'
 
 // Backoffice: valores como estao guardados (valor de mercado em euro, salario em real)
 type JogadorAdmin = {
@@ -24,9 +25,19 @@ type JogadorAdmin = {
 }
 
 const POSICOES = ['Goleiro', 'Defensor', 'Meio-campista', 'Atacante']
-const NUMEROS = ['numero', 'jogos', 'titular', 'jogosSemSofrerGols', 'jogosSelecao', 'valorMercadoEuros'] as const
-const TEXTOS = ['nome', 'posicao', 'nacionalidade', 'nomeCompleto', 'nascimento', 'fimContrato', 'fontes'] as const
-type Campos = Record<(typeof NUMEROS)[number] | (typeof TEXTOS)[number] | 'salarioMensalReais' | 'titulos', string>
+const NUMEROS = ['numero', 'jogos', 'titular', 'jogosSemSofrerGols', 'jogosSelecao'] as const
+const TEXTOS = ['nome', 'posicao', 'nacionalidade', 'nomeCompleto', 'fontes'] as const
+// moedas e datas ficam mascaradas no formulario e sao convertidas em paraEnvio
+type Campos = Record<
+  | (typeof NUMEROS)[number]
+  | (typeof TEXTOS)[number]
+  | 'salarioMensalReais'
+  | 'valorMercadoEuros'
+  | 'nascimento'
+  | 'fimContrato'
+  | 'titulos',
+  string
+>
 
 const reais = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
 const euros = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
@@ -41,24 +52,34 @@ const botaoSecundario = `${botao} border border-stone-200 hover:bg-stone-100 dar
 function paraCampos(j?: JogadorAdmin): Campos {
   const c = {} as Campos
   for (const k of [...NUMEROS, ...TEXTOS]) c[k] = j?.[k] == null ? '' : String(j[k])
-  c.salarioMensalReais = j?.salarioMensalReais ? String(j.salarioMensalReais) : ''
+  c.salarioMensalReais = j?.salarioMensalReais ? mascararMoeda(String(j.salarioMensalReais), 'BRL') : ''
+  c.valorMercadoEuros = j?.valorMercadoEuros != null ? mascararMoeda(String(j.valorMercadoEuros), 'EUR') : ''
+  c.nascimento = j?.nascimento ? isoParaData(j.nascimento) : ''
+  c.fimContrato = j?.fimContrato ? isoParaData(j.fimContrato) : ''
   c.titulos = j?.titulos.join('\n') ?? ''
   c.nacionalidade ||= 'BRA'
   c.posicao ||= 'Goleiro'
   return c
 }
 
+/** Monta o JSON da API; datas invalidas voltam em erros, sem enviar. */
 function paraEnvio(c: Campos) {
   const corpo: Record<string, unknown> = {}
+  const erros: Record<string, string> = {}
   for (const k of NUMEROS) corpo[k] = c[k].trim() === '' ? null : Number(c[k])
   for (const k of TEXTOS) corpo[k] = c[k].trim() === '' ? null : c[k].trim()
   corpo.nacionalidade = c.nacionalidade.trim().toUpperCase()
-  corpo.salarioMensalReais = c.salarioMensalReais.trim() === '' ? 0 : Number(c.salarioMensalReais)
+  corpo.salarioMensalReais = moedaParaNumero(c.salarioMensalReais) ?? 0
+  corpo.valorMercadoEuros = moedaParaNumero(c.valorMercadoEuros)
+  for (const k of ['nascimento', 'fimContrato'] as const) {
+    corpo[k] = dataParaIso(c[k])
+    if (corpo[k] === undefined) erros[k] = 'Data inválida, use dd/mm/aaaa'
+  }
   corpo.titulos = c.titulos
     .split('\n')
     .map((t) => t.trim())
     .filter(Boolean)
-  return corpo
+  return { corpo, erros }
 }
 
 export default function Admin() {
@@ -269,7 +290,35 @@ function Formulario({ jogador, fechar, sair }: { jogador?: JogadorAdmin; fechar:
   const previa = useMemo(() => foto && URL.createObjectURL(foto), [foto])
   useEffect(() => () => void (previa && URL.revokeObjectURL(previa)), [previa])
 
-  const mudar = (k: keyof Campos) => (e: { target: { value: string } }) => setCampos({ ...campos, [k]: e.target.value })
+  const mudar =
+    (k: keyof Campos, mascara: (v: string) => string = (v) => v) =>
+    (e: { target: { value: string } }) =>
+      setCampos({ ...campos, [k]: mascara(e.target.value) })
+
+  const moeda = (k: 'salarioMensalReais' | 'valorMercadoEuros', rotulo: string, tipo: 'BRL' | 'EUR') => (
+    <Campo rotulo={rotulo} erro={errosCampos[k]}>
+      <input
+        inputMode="numeric"
+        placeholder={tipo === 'BRL' ? 'R$ 0' : '€ 0'}
+        value={campos[k]}
+        onChange={mudar(k, (v) => mascararMoeda(v, tipo))}
+        className={input}
+      />
+    </Campo>
+  )
+
+  const data = (k: 'nascimento' | 'fimContrato', rotulo: string) => (
+    <Campo rotulo={rotulo} erro={errosCampos[k]}>
+      <input
+        inputMode="numeric"
+        placeholder="dd/mm/aaaa"
+        maxLength={10}
+        value={campos[k]}
+        onChange={mudar(k, mascararData)}
+        className={input}
+      />
+    </Campo>
+  )
 
   async function executar(acao: () => Promise<void>) {
     setEnviando(true)
@@ -288,8 +337,14 @@ function Formulario({ jogador, fechar, sair }: { jogador?: JogadorAdmin; fechar:
 
   const salvar = (e: FormEvent) => {
     e.preventDefault()
+    const { corpo: dados, erros } = paraEnvio(campos)
+    if (Object.keys(erros).length) {
+      setErro('Corrija os campos destacados')
+      setErrosCampos(erros)
+      return
+    }
     executar(async () => {
-      const corpo = JSON.stringify(paraEnvio(campos))
+      const corpo = JSON.stringify(dados)
       const salvo = atual
         ? await admin<JogadorAdmin>(`/api/admin/jogadores/${atual.id}`, { method: 'PUT', body: corpo })
         : await admin<JogadorAdmin>('/api/admin/jogadores', { method: 'POST', body: corpo })
@@ -313,7 +368,7 @@ function Formulario({ jogador, fechar, sair }: { jogador?: JogadorAdmin; fechar:
     }
   }
 
-  const numero = (k: (typeof NUMEROS)[number] | 'salarioMensalReais', rotulo: string) => (
+  const numero = (k: (typeof NUMEROS)[number], rotulo: string) => (
     <Campo rotulo={rotulo} erro={errosCampos[k]}>
       <input type="number" min={0} value={campos[k]} onChange={mudar(k)} className={input} />
     </Campo>
@@ -360,21 +415,22 @@ function Formulario({ jogador, fechar, sair }: { jogador?: JogadorAdmin; fechar:
           </select>
         </Campo>
         <Campo rotulo="Nacionalidade (ISO, ex.: BRA)" erro={errosCampos.nacionalidade}>
-          <input maxLength={3} value={campos.nacionalidade} onChange={mudar('nacionalidade')} className={input} />
+          <input
+            maxLength={3}
+            value={campos.nacionalidade}
+            onChange={mudar('nacionalidade', (v) => v.toUpperCase().replace(/[^A-Z]/g, ''))}
+            className={input}
+          />
         </Campo>
         <div className="col-span-2">
           <Campo rotulo="Nome completo" erro={errosCampos.nomeCompleto}>
             <input value={campos.nomeCompleto} onChange={mudar('nomeCompleto')} className={input} />
           </Campo>
         </div>
-        <Campo rotulo="Nascimento" erro={errosCampos.nascimento}>
-          <input type="date" value={campos.nascimento} onChange={mudar('nascimento')} className={input} />
-        </Campo>
-        <Campo rotulo="Fim do contrato" erro={errosCampos.fimContrato}>
-          <input type="date" value={campos.fimContrato} onChange={mudar('fimContrato')} className={input} />
-        </Campo>
-        {numero('salarioMensalReais', 'Salário mensal (R$)')}
-        {numero('valorMercadoEuros', 'Valor de mercado (€)')}
+        {data('nascimento', 'Nascimento')}
+        {data('fimContrato', 'Fim do contrato')}
+        {moeda('salarioMensalReais', 'Salário mensal', 'BRL')}
+        {moeda('valorMercadoEuros', 'Valor de mercado', 'EUR')}
         {numero('jogos', 'Jogos pelo Corinthians')}
         {numero('titular', 'Jogos como titular')}
         {numero('jogosSemSofrerGols', 'Jogos sem sofrer gols')}

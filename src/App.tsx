@@ -48,7 +48,11 @@ export default function App() {
       <main className="mx-auto px-4 py-8 lg:w-[90%] lg:px-0">
         <Pagina />
       </main>
-      <footer className="pb-8 text-center text-xs text-stone-400">Dados: Wikipedia / Wikimedia Commons</footer>
+      <footer className="mx-auto max-w-2xl px-4 pb-8 text-center text-xs leading-relaxed text-stone-400">
+        As informações deste site são reunidas a partir de fontes públicas, como Wikipedia e Wikimedia Commons, e
+        revisadas com cuidado. Ainda assim, podem conter imprecisões ou estar desatualizadas. Trabalhamos
+        continuamente para manter os dados corretos e atualizados.
+      </footer>
     </div>
   )
 }
